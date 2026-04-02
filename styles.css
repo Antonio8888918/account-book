@@ -133,6 +133,29 @@ textarea:disabled {
   gap: 24px;
 }
 
+.auth-feedback-card {
+  margin-top: 18px;
+  border-radius: 20px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fbff 100%);
+  border: 1px solid #bfdbfe;
+  box-shadow: var(--shadow);
+  animation: fade-slide-in 0.35s ease;
+}
+
+.auth-feedback-card strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 16px;
+  color: #1d4ed8;
+}
+
+.auth-feedback-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
 .auth-switcher {
   display: flex;
   flex-wrap: wrap;
@@ -154,6 +177,10 @@ textarea:disabled {
   background: var(--primary-soft);
   border-color: rgba(31, 111, 235, 0.18);
   color: var(--primary);
+}
+
+[data-auth-panel] {
+  animation: fade-slide-in 0.28s ease;
 }
 
 .feature-list {
@@ -363,6 +390,18 @@ textarea:focus {
   background: #fff1f2;
   border-color: #fecdd3;
   color: #be123c;
+}
+
+@keyframes fade-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .stats-grid {
