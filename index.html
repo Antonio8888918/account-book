@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>云端中文记账工具</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">邮箱登录 · 云端同步 · 多人独立使用</p>
+        <h1>中文个人记账工具</h1>
+        <p class="hero-text">
+          保留简洁好用的记账体验，同时支持注册、登录、云端保存和多用户数据隔离。你和朋友都可以通过同一个网址使用，各自只会看到自己的账本。
+        </p>
+      </div>
+      <div class="hero-tip">
+        <span class="tip-badge">Supabase + Vercel</span>
+        <p>第一版支持 RUB / CNY 分开记账与分开统计，不做自动汇率换算。</p>
+      </div>
+    </header>
+
+    <div id="statusBanner" class="status-banner hidden">
+      <span id="statusText"></span>
+    </div>
+
+    <section id="authView" class="auth-layout">
+      <section class="panel auth-panel">
+        <div class="section-head auth-section-head">
+          <div>
+            <h2>账号登录</h2>
+            <p id="authHintText">输入邮箱和密码即可登录你的专属账本。</p>
+          </div>
+        </div>
+
+        <div class="auth-switcher">
+          <button type="button" class="auth-tab active" data-auth-mode-button="login">登录</button>
+          <button type="button" class="auth-tab" data-auth-mode-button="register">注册</button>
+          <button type="button" class="auth-tab" data-auth-mode-button="reset">忘记密码</button>
+          <button type="button" class="auth-tab hidden" data-auth-mode-button="update-password">设置新密码</button>
+        </div>
+
+        <form id="loginForm" class="record-form" data-auth-panel="login">
+          <label>
+            <span>邮箱</span>
+            <input type="email" name="email" placeholder="请输入邮箱" required>
+          </label>
+          <label>
+            <span>密码</span>
+            <input type="password" name="password" placeholder="请输入密码" required>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">登录</button>
+          </div>
+        </form>
+
+        <form id="registerForm" class="record-form hidden" data-auth-panel="register">
+          <label>
+            <span>邮箱</span>
+            <input type="email" name="email" placeholder="请输入邮箱" required>
+          </label>
+          <label>
+            <span>密码</span>
+            <input type="password" name="password" placeholder="至少 6 位密码" required>
+          </label>
+          <label>
+            <span>确认密码</span>
+            <input type="password" name="confirmPassword" placeholder="请再次输入密码" required>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">注册账号</button>
+          </div>
+        </form>
+
+        <form id="resetPasswordForm" class="record-form hidden" data-auth-panel="reset">
+          <label>
+            <span>注册邮箱</span>
+            <input type="email" name="email" placeholder="请输入注册时使用的邮箱" required>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">发送重置邮件</button>
+          </div>
+        </form>
+
+        <form id="updatePasswordForm" class="record-form hidden" data-auth-panel="update-password">
+          <label>
+            <span>新密码</span>
+            <input type="password" name="newPassword" placeholder="请输入新的登录密码" required>
+          </label>
+          <label>
+            <span>确认新密码</span>
+            <input type="password" name="confirmPassword" placeholder="请再次输入新密码" required>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="primary-btn">保存新密码</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel auth-info-panel">
+        <div class="section-head">
+          <div>
+            <h2>这个版本做了什么升级</h2>
+            <p>继续沿用你现在的记账布局，但底层已经适合做真实线上小产品。</p>
+          </div>
+        </div>
+
+        <div class="feature-list">
+          <article class="feature-card">
+            <strong>账号体系</strong>
+            <p>支持邮箱注册、登录、退出登录，以及密码重置流程。</p>
+          </article>
+          <article class="feature-card">
+            <strong>数据隔离</strong>
+            <p>通过 Supabase Auth 和 RLS 保证每位用户只能访问自己的数据。</p>
+          </article>
+          <article class="feature-card">
+            <strong>云端同步</strong>
+            <p>记账记录保存在 Supabase 数据库，换设备登录也能继续使用。</p>
+          </article>
+          <article class="feature-card">
+            <strong>继续复用原界面</strong>
+            <p>记账表单、统计区、筛选区和记录列表都保留了原来的使用方式。</p>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <section id="appView" class="app-view hidden">
+      <section class="panel app-toolbar">
+        <div>
+          <h2>我的云端账本</h2>
+          <p>当前账号下的数据会自动与 Supabase 云端同步。</p>
+        </div>
+        <div class="toolbar-actions">
+          <span class="user-pill" id="userEmail">当前用户</span>
+          <button type="button" class="secondary-btn" id="refreshButton">刷新数据</button>
+          <button type="button" class="primary-btn" id="logoutButton">退出登录</button>
+        </div>
+      </section>
+
+      <main class="main-grid">
+        <section class="panel form-panel">
+          <div class="section-head">
+            <div>
+              <h2 id="formTitle">添加记账记录</h2>
+              <p>填写一条收入或支出，保存后会立即写入云端数据库。</p>
+            </div>
+          </div>
+
+          <form id="recordForm" class="record-form">
+            <div class="form-grid">
+              <label>
+                <span>日期</span>
+                <input id="date" name="date" type="date" required>
+              </label>
+              <label>
+                <span>类型</span>
+                <select id="type" name="type" required>
+                  <option value="expense">支出</option>
+                  <option value="income">收入</option>
+                </select>
+              </label>
+              <label>
+                <span>金额</span>
+                <input id="amount" name="amount" type="number" min="0" step="0.01" placeholder="请输入金额" required>
+              </label>
+              <label>
+                <span>分类</span>
+                <select id="category" name="category" required></select>
+              </label>
+              <label>
+                <span>支付方式</span>
+                <select id="paymentMethod" name="paymentMethod" required></select>
+              </label>
+              <label>
+                <span>币种</span>
+                <select id="currency" name="currency" required>
+                  <option value="RUB">RUB</option>
+                  <option value="CNY">CNY</option>
+                </select>
+              </label>
+            </div>
+
+            <label>
+              <span>备注</span>
+              <textarea id="note" name="note" rows="3" placeholder="例如：午饭、地铁充值、工资到账"></textarea>
+            </label>
+
+            <div class="form-actions">
+              <button type="submit" class="primary-btn" id="submitButton">保存记录</button>
+              <button type="button" class="secondary-btn hidden" id="cancelEditButton">取消编辑</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="content-column">
+          <section class="panel">
+            <div class="section-head">
+              <div>
+                <h2>统计概览</h2>
+                <p>按币种分开展示本月收入、本月支出和当前结余。</p>
+              </div>
+            </div>
+            <div id="statsGrid" class="stats-grid"></div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <div>
+                <h2>筛选记录</h2>
+                <p>按日期、类型、分类、币种查看当前账号下的记录。</p>
+              </div>
+              <button type="button" class="text-btn" id="resetFiltersButton">重置筛选</button>
+            </div>
+
+            <div class="filters-grid">
+              <label>
+                <span>开始日期</span>
+                <input id="filterStartDate" type="date">
+              </label>
+              <label>
+                <span>结束日期</span>
+                <input id="filterEndDate" type="date">
+              </label>
+              <label>
+                <span>类型</span>
+                <select id="filterType">
+                  <option value="all">全部</option>
+                  <option value="expense">支出</option>
+                  <option value="income">收入</option>
+                </select>
+              </label>
+              <label>
+                <span>分类</span>
+                <select id="filterCategory">
+                  <option value="all">全部分类</option>
+                </select>
+              </label>
+              <label>
+                <span>币种</span>
+                <select id="filterCurrency">
+                  <option value="all">全部币种</option>
+                  <option value="RUB">RUB</option>
+                  <option value="CNY">CNY</option>
+                </select>
+              </label>
+            </div>
+          </section>
+
+          <section class="panel records-panel">
+            <div class="section-head">
+              <div>
+                <h2>最近记录</h2>
+                <p id="recordsCountText">共 0 条记录</p>
+              </div>
+            </div>
+            <div id="recordsList" class="records-list"></div>
+          </section>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <template id="recordItemTemplate">
+    <article class="record-item">
+      <div class="record-main">
+        <div class="record-top">
+          <div class="record-title-group">
+            <span class="record-type-badge"></span>
+            <strong class="record-category"></strong>
+          </div>
+          <strong class="record-amount"></strong>
+        </div>
+        <div class="record-meta">
+          <span class="record-date"></span>
+          <span class="record-payment"></span>
+          <span class="record-note"></span>
+        </div>
+      </div>
+      <div class="record-actions">
+        <button type="button" class="text-btn edit-btn">编辑</button>
+        <button type="button" class="text-btn danger-btn delete-btn">删除</button>
+      </div>
+    </article>
+  </template>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
