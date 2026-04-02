@@ -1,3 +1,5 @@
+export const APP_VERSION = "修改版1";
+
 export const CATEGORY_OPTIONS = {
   expense: [
     "餐饮",

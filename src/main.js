@@ -1,7 +1,9 @@
 import { createTransactionApp } from "./app.js";
+import { APP_VERSION } from "./constants.js";
 import { hasSupabaseConfig, supabase, supabaseConfigError } from "./supabase.js";
 
 const elements = {
+  appVersionBadge: document.getElementById("appVersionBadge"),
   authView: document.getElementById("authView"),
   appView: document.getElementById("appView"),
   statusBanner: document.getElementById("statusBanner"),
@@ -32,6 +34,7 @@ const app = createTransactionApp({
 initialize();
 
 async function initialize() {
+  elements.appVersionBadge.textContent = APP_VERSION;
   bindAuthEvents();
   app.initialize();
   handleAuthRedirectMessages();

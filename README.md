@@ -248,4 +248,3 @@ created_at timestamptz not null
 - 记账 CRUD 和统计：`src/app.js`
 - Supabase 客户端：`src/supabase.js`
 - 数据库结构：`supabase/schema.sql`
-部署触发测试
